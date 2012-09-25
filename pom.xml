@@ -1,41 +1,92 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.planbnet</groupId>
-	<artifactId>javadocbrowser</artifactId>
-	<packaging>war</packaging>
-	<version>0.0.1</version>
-	<name>JavaDoc Browser</name>
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.planbnet</groupId>
+   <artifactId>javadocbrowser</artifactId>
+   <packaging>war</packaging>
+   <version>0.0.1</version>
+   <name>JavaDoc Browser</name>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>r07</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
+   <dependencies>
+      <dependency>
+         <groupId>com.google.guava</groupId>
+         <artifactId>guava</artifactId>
+         <version>r07</version>
+      </dependency>
+      <dependency>
+         <groupId>javax.servlet</groupId>
+         <artifactId>servlet-api</artifactId>
+         <version>2.5</version>
+         <scope>provided</scope>
+      </dependency>
+   </dependencies>
 
-	<build>
-		<finalName>javadoc</finalName>
-		<defaultGoal>compile</defaultGoal>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+   <build>
+      <finalName>javadoc</finalName>
+      <defaultGoal>compile</defaultGoal>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.3.1</version>
+            <configuration>
+               <source>1.6</source>
+               <target>1.6</target>
+            </configuration>
+         </plugin>
+         <!-- Run the application using "mvn jetty" -->
+         <plugin>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>maven-jetty-plugin</artifactId>
+            <version>6.1.10</version>
+            <configuration>
+               <scanIntervalSeconds>10</scanIntervalSeconds>
+               <stopKey>foo</stopKey>
+               <stopPort>9999</stopPort>
+               <scanTargetPatterns>
+                  <scanTargetPattern>
+                     <directory>src/main/webapp</directory>
+                     <includes>
+                        <include>**/*.html</include>
+                        <include>**/*.js</include>
+                        <include>**/*.css</include>
+                        <include>**/*.less</include>
+                     </includes>
+                     <excludes>
+                        <exclude>js/libs/*.*</exclude>
+                     </excludes>
+                  </scanTargetPattern>
+                  <scanTargetPattern>
+                     <directory>src/main/java</directory>
+                     <includes>
+                        <include>**/*.java</include>
+                     </includes>
+                  </scanTargetPattern>
+               </scanTargetPatterns>
+            </configuration>
+            <executions>
+               <execution>
+                  <id>start-jetty</id>
+                  <phase>pre-integration-test</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+                  <configuration>
+                     <scanIntervalSeconds>0</scanIntervalSeconds>
+                     <daemon>true</daemon>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>stop-jetty</id>
+                  <phase>post-integration-test</phase>
+                  <goals>
+                     <goal>stop</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
 
 </project>
