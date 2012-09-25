@@ -43,8 +43,8 @@
     </ul>
     <p>You might want one of these:
     <ul>
-       <li><a href="<%=baseURL%>/com.nesstar/nesstar-api/latest"><%=baseURL%>/com.nesstar/nesstar-api/latest</a></li>
-       <li><a href="<%=baseURL%>/com.nesstar/nesstar-api/0.4"><%=baseURL%>/com.nesstar/nesstar-api/0.4</a></li>
+       <li><a href="<%=request.getContextPath()%>/com.nesstar/nesstar-api/latest"><%=baseURL%>/com.nesstar/nesstar-api/latest</a></li>
+       <li><a href="<%=request.getContextPath()%>/com.nesstar/nesstar-api/0.4"><%=baseURL%>/com.nesstar/nesstar-api/0.4</a></li>
   </div>
 </body>
 </html>
