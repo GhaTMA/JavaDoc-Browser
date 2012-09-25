@@ -31,99 +31,130 @@ import com.google.common.io.ByteStreams;
  */
 public class DocServlet extends HttpServlet {
 
-	public String repositoryPath;
+   public String repositoryPath;
 
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		repositoryPath = this.getServletContext().getInitParameter("repository");
-		if (repositoryPath == null) {
-			throw new ServletException("Context param repository not set");
-		}
+   @Override
+   public void init() throws ServletException {
+      super.init();
+      repositoryPath = this.getServletContext().getInitParameter("repository");
+      if (repositoryPath == null) {
+         throw new ServletException("Context param repository not set");
+      }
 
-		if (!new File(repositoryPath).exists()) {
-			throw new ServletException("Repository path " + repositoryPath
-					+ " does not exist");
-		}
-	}
+      if (!new File(repositoryPath).exists()) {
+         throw new ServletException("Repository path " + repositoryPath
+               + " does not exist");
+      }
+   }
 
 
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+   @Override
+   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		String path = req.getPathInfo();
+      String path = req.getPathInfo();
 
-		if (path == null || path.equals("") || path.equals("/")) {
-			resp.sendError(404, "/");
-			return;
-		}
+      if (path == null || path.equals("") || path.equals("/")) {
+         resp.sendError(404, "/");
+         return;
+      }
 
-		if (path.startsWith("/"))
-			path = path.substring(1);
+      if (path.startsWith("/"))
+         path = path.substring(1);
 
-		String groupId;
-		String artifactId;
-		String version;
-		String file;
+      String groupId;
+      String artifactId;
+      String version;
+      String file;
 
-		StringTokenizer strTok = new StringTokenizer(path, "/");
-		if (!strTok.hasMoreElements()) {
-			resp.sendError(404, path);
-			return;
-		}
-		groupId = strTok.nextToken();
-		if (!strTok.hasMoreElements()) {
-			resp.sendError(404, path);
-			return;
-		}
-		artifactId = strTok.nextToken();
-		if (!strTok.hasMoreElements()) {
-			resp.sendError(404, path);
-			return;
-		}
-		version = strTok.nextToken();
+      StringTokenizer strTok = new StringTokenizer(path, "/");
+      if (!strTok.hasMoreElements()) {
+         resp.sendError(404, path);
+         return;
+      }
+      groupId = strTok.nextToken();
+      if (!strTok.hasMoreElements()) {
+         resp.sendError(404, path);
+         return;
+      }
+      artifactId = strTok.nextToken();
+      if (!strTok.hasMoreElements()) {
+         resp.sendError(404, path);
+         return;
+      }
+      version = strTok.nextToken();
 
-		String absoluteJarPath = repositoryPath + File.separator
-				+ groupId.replace(".", File.separator) + File.separator
-				+ artifactId + File.separator + version + File.separator
-				+ artifactId + "-" + version + "-javadoc.jar";
+      if ("latest".equalsIgnoreCase(version)) {
+         try {
+            version = getLatest(repositoryPath, groupId, artifactId);
+         } catch (Exception e) {
+            resp.sendError(404, path);
+            return;
+         }
+      }
 
-		if (!new File(absoluteJarPath).exists()) {
-			resp.sendError(404, path);
-			return;
-		}
+      String absoluteJarPath = repositoryPath + File.separator
+         + groupId.replace(".", File.separator) + File.separator
+         + artifactId + File.separator + version + File.separator
+         + artifactId + "-" + version + "-javadoc.jar";
 
-		if (!strTok.hasMoreElements()) {
-			resp.sendRedirect(version + "/index.html");
-			return;
-		} else {
-			StringBuilder filePath = new StringBuilder();
-			while (strTok.hasMoreElements()) {
-				filePath.append(strTok.nextToken());
-				if (strTok.hasMoreElements()) {
-					filePath.append(File.separator);
-				}
-			}
-			file = filePath.toString();
-		}
+      if (!new File(absoluteJarPath).exists()) {
+         resp.sendError(404, path);
+         return;
+      }
 
-		JarFile jarFile = new JarFile(absoluteJarPath);
-		JarEntry entry = jarFile.getJarEntry(file);
+      if (!strTok.hasMoreElements()) {
+         resp.sendRedirect(version + "/index.html");
+         return;
+      } else {
+         StringBuilder filePath = new StringBuilder();
+         while (strTok.hasMoreElements()) {
+            filePath.append(strTok.nextToken());
+            if (strTok.hasMoreElements()) {
+               filePath.append(File.separator);
+            }
+         }
+         file = filePath.toString();
+      }
 
-		if (entry == null) {
-			resp.sendError(404, path);
-			return;
-		}
 
-		resp.setContentLength((int) entry.getSize());
-		String mimetype = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(entry.getName());
-		resp.setContentType(mimetype);
-		InputStream input = jarFile.getInputStream(entry);
-		try {
-			ByteStreams.copy(input, resp.getOutputStream());
-		} finally {
-			input.close();
-		}
-	}
+      JarFile jarFile = new JarFile(absoluteJarPath);
+      JarEntry entry = jarFile.getJarEntry(file);
+
+      if (entry == null) {
+         resp.sendError(404, path);
+         return;
+      }
+
+      resp.setContentLength((int) entry.getSize());
+      String mimetype = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(entry.getName());
+      resp.setContentType(mimetype);
+      InputStream input = jarFile.getInputStream(entry);
+      try {
+         ByteStreams.copy(input, resp.getOutputStream());
+      } finally {
+         input.close();
+      }
+   }
+
+   private String getLatest(String repositoryPath, String groupId, String artifactId) throws Exception {
+      String path = repositoryPath + File.separator + groupId.replace(".", File.separator) + File.separator + artifactId;
+      String latestVersionWithJavadocs = null;
+      File artifactFolder = new File(path);
+      String artifactVersions[] = artifactFolder.list();
+      java.util.Arrays.sort(artifactVersions);
+
+      //Find newest version with javadocs published 
+      for (String artifactVersion : artifactVersions) {
+        String javadocJarPath = path + File.separator + artifactVersion + File.separator + artifactId + "-" + artifactVersion + "-javadoc.jar";
+        File javadocJar = new File (javadocJarPath);
+        if (javadocJar.exists()) {
+            latestVersionWithJavadocs = artifactVersion; 
+        }
+      }
+
+      if (null == latestVersionWithJavadocs) {
+         throw new Exception("No Javadocs found");
+      }
+      return latestVersionWithJavadocs;
+   }
 }
