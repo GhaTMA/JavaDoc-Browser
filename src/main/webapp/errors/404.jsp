@@ -29,22 +29,21 @@
   </style>
 </head>
 <body>
-  <% String baseURL = new java.net.URL(request.getScheme(), request.getServerName(), request.getServerPort(), request.getContextPath()).toString(); %>
   <div class="container">
     <h1>Not found <span>:(</span></h1>
     <p>Sorry, but the page you were trying to view does not exist.</p>
     <p>It looks like this was the result of either:</p>
     <ul>
        <li>A mistyped address.
-       <em>The URIs follow a strict scheme:<%=baseURL%>/<strong>group id</strong/>/<strong>artifact id</strong>/<strong>version</strong> (or just the word "latest")</em>
+       The URIs follow a strict scheme:<br /><em><%=request.getContextPath()%>/<strong>group id</strong/>/<strong>artifact id</strong>/<strong>version</strong> (or just the word "latest")</em>
        </li>
        <li>No javadocs was found for the specified package
        </li>
     </ul>
     <p>You might want one of these:
     <ul>
-       <li><a href="<%=request.getContextPath()%>/com.nesstar/nesstar-api/latest"><%=baseURL%>/com.nesstar/nesstar-api/latest</a></li>
-       <li><a href="<%=request.getContextPath()%>/com.nesstar/nesstar-api/0.4"><%=baseURL%>/com.nesstar/nesstar-api/0.4</a></li>
+       <li><a href="<%=request.getContextPath()%>/com.nesstar/nesstar-api/latest"><%=request.getContextPath()%>/com.nesstar/nesstar-api/latest</a></li>
+       <li><a href="<%=request.getContextPath()%>/com.nesstar/nesstar-api/0.4"><%=request.getContextPath()%>/com.nesstar/nesstar-api/0.4</a></li>
   </div>
 </body>
 </html>
