@@ -6,7 +6,7 @@
   <display-name>JavaDoc Browser</display-name>
   <context-param>
     <param-name>repository</param-name>
-    <param-value>/home/kjetil/.m2/repository</param-value>
+    <param-value><!--Put file path to repo here --></param-value>
   </context-param>
 
   <servlet>
